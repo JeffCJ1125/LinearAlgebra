@@ -1,12 +1,15 @@
 import math as math
+from decimal import Decimal,getcontext
 
+getcontext().prec = 30
 
 class Vector(object):
     def __init__(self, coordinates):
         try:
             if not coordinates:
                 raise ValueError
-            self.coordinates = tuple(coordinates)
+            self.coordinates = tuple([Decimal(x) for x in coordinates])
+            # self.coordinates = tuple(coordinates)
             self.dimension = len(coordinates)
 
         except ValueError:
@@ -39,13 +42,13 @@ class Vector(object):
         square_list = [x**2 for x in self.coordinates]
         # for i in range(len(self.coordinates)):
         #     sum += self.coordinates[i] * self.coordinates[i]
-        result = math.sqrt(sum(square_list))
+        result = Decimal(math.sqrt(sum(square_list)))
         return result
 
     def normalization(self):
         try:
             dis = self.magnitude()
-            return self.scalar(1 / dis)
+            return self.scalar(Decimal(1.0) / dis)
         except ZeroDivisionError:
             raise Exception("can not be zero vector")
 

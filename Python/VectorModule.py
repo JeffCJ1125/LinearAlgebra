@@ -1,7 +1,8 @@
 import math as math
-from decimal import Decimal,getcontext
+from decimal import Decimal, getcontext
 
 getcontext().prec = 30
+
 
 class Vector(object):
     def __init__(self, coordinates):
@@ -24,7 +25,7 @@ class Vector(object):
     def __eq__(self, v):
         return self.coordinates == v.coordinates
 
-    def add(self, v):
+    def plus(self, v):
         result = []
         for i in range(len(self.coordinates)):
             result.append(self.coordinates[i] + v.coordinates[i])
@@ -34,8 +35,8 @@ class Vector(object):
         result = [x - y for x, y in zip(self.coordinates, v.coordinates)]
         return Vector(result)
 
-    def scalar(self, constant):
-        result = [constant * x for x in self.coordinates]
+    def times_scalar(self, constant):
+        result = [Decimal(constant) * x for x in self.coordinates]
         return Vector(result)
 
     def magnitude(self):
@@ -45,48 +46,51 @@ class Vector(object):
         result = Decimal(math.sqrt(sum(square_list)))
         return result
 
-    def normalization(self):
+    def normalize(self):
         try:
             dis = self.magnitude()
-            return self.scalar(Decimal(1.0) / dis)
+            return self.times_scalar(Decimal(1.0) / dis)
         except ZeroDivisionError:
             raise Exception("can not be zero vector")
 
-    def DotProduct(self, v):
-        multipy_list = [x * y for x, y in zip(self.coordinates, v.coordinates)]
-        return sum(multipy_list)
+    def dot_product(self, v):
+        multipy_list = [Decimal(x * y) for x, y in zip(self.coordinates, v.coordinates)]
+        return Decimal(sum(multipy_list))
 
-    def Angle(self, v, isDegree=False):
-        denominator = self.magnitude() * v.magnitude()
+    def get_angle(self, v, isDegree=False):
+        dot_prod = round(self.normalize().dot_product(v.normalize()), 3)
         if isDegree == False:
-            return math.acos(self.DotProduct(v) / denominator)
+            return math.acos(dot_prod)
         else:
-            return math.acos(self.DotProduct(v) / denominator) * 180 / math.pi
+            return math.acos(dot_prod) * 180 / math.pi
 
-    def isZeroVector(self, tolerance=1e-10):
+    def is_zero_vector(self, tolerance=1e-10):
         return math.fabs(sum(self.coordinates)) <= tolerance
 
-    def isOrthogonal(self, v, tolerance=1e-10):
-        return math.fabs(self.DotProduct(v)) <= tolerance
+    def is_orthogonal(self, v, tolerance=1e-10):
+        return math.fabs(self.dot_product(v)) <= tolerance
 
-    def isParallel(self, v, tolerance=1e-10):
-        if self.isZeroVector():
+    def is_parallel(self, v, tolerance=1e-10):
+        if self.is_zero_vector():
             return True
-        if v.isZeroVector():
+        if v.is_zero_vector():
             return True
-        # print(math.fabs(self.Angle(v)),(math.fabs(self.Angle(v)) - math.pi))
-        if math.fabs(self.Angle(v)) <= tolerance or math.fabs(self.Angle(v)) == math.pi:
+        # print(math.fabs(self.get_angle(v)),(math.fabs(self.get_angle(v)) - math.pi))
+        if (
+            math.fabs(self.get_angle(v)) <= tolerance
+            or math.fabs(self.get_angle(v)) == math.pi
+        ):
             return True
         return False
 
-    def getParallel(self, v):
-        return v.normalization().scalar(self.DotProduct(v.normalization()))
+    def get_projected_vector(self, v):
+        return v.normalize().times_scalar(self.dot_product(v.normalize()))
 
-    def getOrthogonal(self, v):
-        self_p = self.getParallel(v)
+    def get_orthogonal_vector(self, v):
+        self_p = self.get_projected_vector(v)
         return self.minus(self_p)
 
-    def crossProducts(self, v):
+    def cross_product(self, v):
         if self.dimension == 3:
             theVector = Vector(self.coordinates)
         else:
@@ -100,28 +104,23 @@ class Vector(object):
             newlist.append(0)
             theVector2 = Vector(newlist)
         # print(theVector2)
-        result = []
-        result.append(
+        result = [
             theVector.coordinates[1] * theVector2.coordinates[2]
-            - theVector.coordinates[2] * theVector2.coordinates[1]
-        )
-        result.append(
-            -1.0
+            - theVector.coordinates[2] * theVector2.coordinates[1],
+            Decimal(-1.0)
             * (
                 theVector.coordinates[0] * theVector2.coordinates[2]
                 - theVector.coordinates[2] * theVector2.coordinates[0]
-            )
-        )
-        result.append(
+            ),
             theVector.coordinates[0] * theVector2.coordinates[1]
-            - theVector.coordinates[1] * theVector2.coordinates[0]
-        )
+            - theVector.coordinates[1] * theVector2.coordinates[0],
+        ]
         return Vector(result)
 
-    def ParallelogramArea(self, v):
-        cpresult = self.crossProducts(v)
-        # area = self.magnitude() * v.magnitude() * math.sin(angle)
+    def area_parallelogram(self, v):
+        cpresult = self.cross_product(v)
+        # area = self.magnitude() * v.magnitude() * math.sin(get_angle)
         return cpresult.magnitude()
 
-    def TriangleArea(self, v):
-        return self.ParallelogramArea(v) * 0.5
+    def area_triangle(self, v):
+        return self.area_parallelogram(v) /2

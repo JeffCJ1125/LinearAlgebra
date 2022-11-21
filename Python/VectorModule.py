@@ -55,10 +55,10 @@ class Vector(object):
 
     def dot_product(self, v):
         multipy_list = [Decimal(x * y) for x, y in zip(self.coordinates, v.coordinates)]
-        return Decimal(sum(multipy_list))
+        return round(sum(multipy_list),5)
 
     def get_angle(self, v, isDegree=False):
-        dot_prod = round(self.normalize().dot_product(v.normalize()), 3)
+        dot_prod = self.normalize().dot_product(v.normalize())
         if isDegree == False:
             return math.acos(dot_prod)
         else:

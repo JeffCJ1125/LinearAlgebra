@@ -74,12 +74,14 @@ class Line(object):
         n = self.normal_vector
 
         try:
-            initial_index = Line.first_nonzero_index(n)
+            initial_index = Line.first_nonzero_index(n.coordinates)
             terms = [
-                write_coefficient(n[i], is_initial_term=(i == initial_index))
+                write_coefficient(
+                    n.coordinates[i], is_initial_term=(i == initial_index)
+                )
                 + "x_{}".format(i + 1)
                 for i in range(self.dimension)
-                if round(n[i], num_decimal_places) != 0
+                if round(n.coordinates[i], num_decimal_places) != 0
             ]
             output = " ".join(terms)
 
@@ -103,23 +105,23 @@ class Line(object):
                 return k
         raise Exception(Line.NO_NONZERO_ELTS_FOUND_MSG)
 
-    def isParallel(self, line):
-        return self.normal_vector.isParallel(line.normal_vector)
+    def is_parallel(self, line):
+        return self.normal_vector.is_parallel(line.normal_vector)
 
     def __eq__(self, line):
-        if self.normal_vector.isZeroVector():
-            if not line.normal_vector.isZeroVector():
+        if self.normal_vector.is_zero_vector():
+            if not line.normal_vector.is_zero_vector():
                 return False
             else:
                 diff = self.constant_term - line.constant_term
                 return MyDecimal(diff).is_near_zero()
-        elif line.normal_vector.isZeroVector():
+        elif line.normal_vector.is_zero_vector():
             return False
 
-        if self.isParallel(line) == False:
+        if self.is_parallel(line) == False:
             return False
 
-        return self.normal_vector.isOrthogonal(self.basepoint.minus(line.basepoint))
+        return self.normal_vector.is_orthogonal(self.basepoint.minus(line.basepoint))
 
     def getIntersection(self, line):
         A = self.normal_vector.coordinates[0]
@@ -128,10 +130,17 @@ class Line(object):
         C = line.normal_vector.coordinates[0]
         D = line.normal_vector.coordinates[1]
         k2 = line.constant_term
+        denom = A * D - B * C
+        if MyDecimal(denom).is_near_zero():
+            if self == line:
+                return self
+            else:
+                return None
+
         return Vector(
             [
-                (D * k1 - B * k2) / (A * D - B * C),
-                (-1 * C * k1 + A * k2) / (A * D - B * C),
+                (D * k1 - B * k2) / denom,
+                (-1 * C * k1 + A * k2) / denom,
             ]
         )
 
@@ -139,5 +148,3 @@ class Line(object):
 class MyDecimal(Decimal):
     def is_near_zero(self, eps=1e-10):
         return abs(self) < eps
-
-

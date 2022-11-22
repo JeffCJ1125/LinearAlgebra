@@ -15,7 +15,9 @@ class Plane(object):
         if not normal_vector:
             all_zeros = ["0"] * self.dimension
             normal_vector = Vector(all_zeros)
-        self.normal_vector = Vector(normal_vector)
+        if not type(normal_vector) == type(Vector([1,1,1])):
+            normal_vector = Vector(normal_vector)
+        self.normal_vector = normal_vector
 
         if not constant_term:
             constant_term = Decimal("0")

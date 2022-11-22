@@ -55,7 +55,7 @@ class Vector(object):
 
     def dot_product(self, v):
         multipy_list = [Decimal(x * y) for x, y in zip(self.coordinates, v.coordinates)]
-        return round(sum(multipy_list),5)
+        return round(sum(multipy_list), 5)
 
     def get_angle(self, v, isDegree=False):
         dot_prod = self.normalize().dot_product(v.normalize())
@@ -123,4 +123,4 @@ class Vector(object):
         return cpresult.magnitude()
 
     def area_triangle(self, v):
-        return self.area_parallelogram(v) /2
+        return self.area_parallelogram(v) / 2
